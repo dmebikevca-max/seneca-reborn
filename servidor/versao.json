@@ -1,0 +1,13 @@
+{
+ "versao": "0.6.0-dev5",
+ "publicado": "2026-11-15T13:58:01",
+ "binario": "f69d443c4473",
+ "pacote": "4cbc5f79505b",
+ "pagina": {
+  "index.audio.position.worklet.js": "8a7370a54ea5",
+  "index.audio.worklet.js": "c55ea38b7dbd",
+  "index.js": "304c6a520d2d",
+  "index.pck": "f7427d2f4480",
+  "index.wasm": "83e2f97ab834"
+ }
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Servidor SENECA REBORN</title>
+<style>
+body { background: #0b0a10; color: #e8dcc4; font-family: Georgia, serif; display: flex; min-height: 100vh;
+	align-items: center; justify-content: center; margin: 0; text-align: center; }
+h1 { color: #d9b56a; letter-spacing: 6px; }
+a { color: #e0b562; font-size: 22px; }
+#estado { color: #b9ad98; font-family: Arial, sans-serif; margin-top: 18px; }
+</style>
+</head>
+<body>
+<div>
+	<h1>SENECA REBORN</h1>
+	<p>Este é o servidor online do jogo.</p>
+	<p><a href="https://dmebikevca-max.github.io/seneca-reborn/">Clique aqui para jogar no navegador</a></p>
+	<div id="estado">Verificando o servidor...</div>
+</div>
+<script>
+fetch('status.json', {cache: 'no-store'}).then(r => r.json()).then(s => {
+	document.getElementById('estado').textContent = s.jogadores === undefined ? 'Servidor ligando...' :
+		'Servidor online · versão ' + (s.versao || '?') + ' · ' + s.jogadores + ' jogador(es) agora';
+}).catch(() => { document.getElementById('estado').textContent = 'Servidor ligando...'; });
+</script>
+</body>
+</html>

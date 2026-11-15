@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta name="description" content="SENECA REBORN: ARPG cooperativo para até 5 jogadores, direto no navegador.">
+		<title>SENECA REBORN</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: #e8dcc4;
+	background-color: #0b0a10;
+	overflow: hidden;
+	touch-action: none;
+	font-family: Georgia, 'Times New Roman', serif;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(ellipse at 50% 40%, #241a2c 0%, #0b0a10 70%);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 18px;
+	visibility: hidden;
+	text-align: center;
+}
+
+#status-splash {
+	max-width: min(560px, 80vw);
+	max-height: 40vh;
+}
+
+#status-title {
+	font-size: 42px;
+	letter-spacing: 10px;
+	color: #d9b56a;
+	text-shadow: 0 0 18px rgba(217, 181, 106, 0.35);
+}
+
+#status-sub {
+	font-size: 16px;
+	letter-spacing: 3px;
+	color: #a99a86;
+	margin-top: -10px;
+}
+
+#status-bar {
+	width: min(520px, 70vw);
+	height: 10px;
+	border: 1px solid #6b5a3c;
+	border-radius: 6px;
+	background: #16131c;
+	overflow: hidden;
+	display: none;
+}
+
+#status-fill {
+	height: 100%;
+	width: 0%;
+	background: linear-gradient(90deg, #8d6a2c, #e0b562);
+	transition: width 0.2s;
+}
+
+#status-text {
+	font-size: 15px;
+	color: #b9ad98;
+	font-family: 'Segoe UI', Arial, sans-serif;
+	min-height: 20px;
+}
+
+#status-notice {
+	display: none;
+	background-color: #3a2228;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #f0e0e0;
+	font-family: 'Segoe UI', Arial, sans-serif;
+	line-height: 1.4;
+	margin: 0 2rem;
+	max-width: 640px;
+	padding: 1rem 1.4rem;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+	</head>
+	<body>
+		<canvas id="canvas">
+			Seu navegador não tem suporte a canvas.
+		</canvas>
+
+		<noscript>
+			Para jogar, ative o JavaScript do navegador.
+		</noscript>
+
+		<div id="status">
+			<div id="status-title">SENECA REBORN</div>
+			<div id="status-sub">O VÉU PARTIDO</div>
+			<div id="status-bar"><div id="status-fill"></div></div>
+			<div id="status-text">Preparando...</div>
+			<div id="status-notice"></div>
+		</div>
+
+		<script>
+// Cada atualização publicada troca a marca dos arquivos que mudaram, então o navegador baixa só o
+// que é novo (e nunca mistura a página nova com um arquivo velho guardado no cache).
+const SENECA_VERSOES = {"index.audio.position.worklet.js": "8a7370a54ea5", "index.audio.worklet.js": "c55ea38b7dbd", "index.js": "304c6a520d2d", "index.pck": "f7427d2f4480", "index.wasm": "83e2f97ab834"};
+(function () {
+	const original = window.fetch.bind(window);
+	window.fetch = function (input, init) {
+		try {
+			if (typeof input === 'string') {
+				const nome = input.split('/').pop().split('?')[0];
+				if (SENECA_VERSOES[nome]) {
+					input += (input.indexOf('?') < 0 ? '?' : '&') + 'v=' + SENECA_VERSOES[nome];
+				}
+			}
+		} catch (e) {
+			// segue sem a marca
+		}
+		return original(input, init);
+	};
+}());
+		</script>
+		<script src="index.js?v=304c6a520d2d"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":90639068,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusBar = document.getElementById('status-bar');
+	const statusFill = document.getElementById('status-fill');
+	const statusText = document.getElementById('status-text');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+
+	function show() {
+		statusOverlay.style.visibility = 'visible';
+	}
+
+	function hide() {
+		statusOverlay.remove();
+		initializing = false;
+	}
+
+	function notice(text) {
+		show();
+		statusBar.style.display = 'none';
+		statusText.textContent = '';
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		text.split('\n').forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+		statusNotice.style.display = 'block';
+		initializing = false;
+	}
+
+	function failure(err) {
+		console.error(err);
+		let msg = 'Não foi possível iniciar o jogo.';
+		if (err instanceof Error) {
+			msg += '\n' + err.message;
+		} else if (typeof err === 'string') {
+			msg += '\n' + err;
+		}
+		msg += '\n\nTente recarregar a página (F5). O jogo funciona no Chrome, Edge ou Firefox de computador.';
+		notice(msg);
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		notice('Este navegador não tem o que o jogo precisa:\n' + missing.join('\n') +
+			'\n\nUse o Chrome, Edge ou Firefox atualizado num computador, com a aceleração de hardware ligada.');
+		return;
+	}
+	show();
+	statusBar.style.display = 'block';
+	statusText.textContent = 'Baixando o jogo... (na primeira vez são cerca de 100 MB; depois fica guardado)';
+	engine.startGame({
+		'onProgress': function (current, total) {
+			if (current > 0 && total > 0) {
+				const p = Math.min(100, Math.floor(current * 100 / total));
+				statusFill.style.width = p + '%';
+				statusText.textContent = 'Baixando o jogo... ' + p + '%  (' + Math.round(current / 1048576) + ' de ' + Math.round(total / 1048576) + ' MB)';
+				if (p >= 100) {
+					statusText.textContent = 'Abrindo o jogo...';
+				}
+			}
+		},
+	}).then(() => {
+		hide();
+	}, failure);
+}());
+		</script>
+	</body>
+</html>
+

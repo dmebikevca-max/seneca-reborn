@@ -1,0 +1,17 @@
+# Servidor online do SENECA REBORN no Render (plano grátis).
+# Criado uma vez pelo painel do Render (Blueprint); depois se atualiza sozinho pelo GitHub.
+services:
+  - type: web
+    name: seneca-reborn-servidor
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./nuvem/Dockerfile
+    dockerContext: ./nuvem
+    autoDeploy: false
+    healthCheckPath: /status.json
+    envVars:
+      - key: SEGREDO_SAVES
+        generateValue: true
+      - key: BASE_SERVIDOR
+        value: https://raw.githubusercontent.com/dmebikevca-max/seneca-reborn/main/servidor
